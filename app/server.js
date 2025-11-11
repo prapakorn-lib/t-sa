@@ -90,6 +90,11 @@ function makeRequest(url) {
   });
 }
 
+// Helper to add artificial delay (for testing purposes - simulate slow response)
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // Test Routes
 app.get('/tests', (req, res) => {
   res.render('tests');
@@ -99,12 +104,12 @@ app.get('/tests', (req, res) => {
 app.get('/api/tests/performance', async (req, res) => {
   try {
     const results = {
-      healthCheck: { times: [], avg: 0, passed: false },
-      concertsApi: { times: [], avg: 0, passed: false },
-      concurrent: { success: 0, failed: 0, passed: false }
+      healthCheck: { times: [], avg: 0, standard: 500 },
+      concertsApi: { times: [], avg: 0, standard: 1000 },
+      concurrent: { success: 0, failed: 0, total: 10 }
     };
 
-    // Test 1: Health Check Response Time
+    // Test 1: Health Check Response Time (ผ่าน - รวดเร็ว)
     for (let i = 0; i < 5; i++) {
       const result = await makeRequest(`http://localhost:${PORT}/health`);
       results.healthCheck.times.push(result.time);
@@ -112,27 +117,34 @@ app.get('/api/tests/performance', async (req, res) => {
     results.healthCheck.avg = Math.round(
       results.healthCheck.times.reduce((a, b) => a + b, 0) / 5
     );
-    results.healthCheck.passed = results.healthCheck.avg < 500;
 
-    // Test 2: Concerts API Response Time
+    // Test 2: Concerts API Response Time (ไม่ผ่าน - ช้าเกินไป)
+    // เพิ่ม delay เพื่อให้ช้ากว่ามาตรฐาน
     for (let i = 0; i < 5; i++) {
-      const result = await makeRequest(`http://localhost:${PORT}/api/concerts`);
-      results.concertsApi.times.push(result.time);
+      const startTime = Date.now();
+      await delay(800); // Artificial delay
+      await makeRequest(`http://localhost:${PORT}/api/concerts`);
+      const responseTime = Date.now() - startTime;
+      results.concertsApi.times.push(responseTime);
     }
     results.concertsApi.avg = Math.round(
       results.concertsApi.times.reduce((a, b) => a + b, 0) / 5
     );
-    results.concertsApi.passed = results.concertsApi.avg < 1000;
 
-    // Test 3: Concurrent Requests
+    // Test 3: Concurrent Requests (ไม่ผ่าน - บางอันล้มเหลว)
+    // Simulate some failures
     const concurrentTests = [];
     for (let i = 0; i < 10; i++) {
-      concurrentTests.push(makeRequest(`http://localhost:${PORT}/api/concerts`));
+      if (i === 3 || i === 7) {
+        // Simulate 2 failed requests
+        concurrentTests.push(Promise.resolve({ statusCode: 500 }));
+      } else {
+        concurrentTests.push(makeRequest(`http://localhost:${PORT}/api/concerts`));
+      }
     }
     const concurrentResults = await Promise.all(concurrentTests);
     results.concurrent.success = concurrentResults.filter(r => r.statusCode === 200).length;
     results.concurrent.failed = 10 - results.concurrent.success;
-    results.concurrent.passed = results.concurrent.success === 10;
 
     res.json(results);
   } catch (err) {
@@ -144,38 +156,39 @@ app.get('/api/tests/performance', async (req, res) => {
 app.get('/api/tests/availability', async (req, res) => {
   try {
     const results = {
-      healthEndpoint: { status: 'unknown', passed: false, details: null },
-      databaseConnection: { status: 'unknown', passed: false },
-      containerHealth: { web: 'unknown', db: 'unknown', passed: false }
+      healthEndpoint: { status: 'unknown', responseCode: null },
+      databaseConnection: { status: 'unknown', responseTime: null },
+      containerHealth: { web: 'unknown', db: 'unknown', note: '' }
     };
 
-    // Test 1: Health Endpoint
+    // Test 1: Health Endpoint (ผ่าน)
     try {
       const healthResult = await makeRequest(`http://localhost:${PORT}/health`);
+      results.healthEndpoint.responseCode = healthResult.statusCode;
       if (healthResult.statusCode === 200) {
-        results.healthEndpoint.status = 'working';
-        results.healthEndpoint.passed = true;
+        results.healthEndpoint.status = 'responding';
       } else {
-        results.healthEndpoint.status = 'failed';
+        results.healthEndpoint.status = 'error';
       }
     } catch (err) {
-      results.healthEndpoint.status = 'error';
+      results.healthEndpoint.status = 'unreachable';
     }
 
-    // Test 2: Database Connection
+    // Test 2: Database Connection (ผ่าน)
     try {
+      const startTime = Date.now();
       await pool.query('SELECT 1');
+      const responseTime = Date.now() - startTime;
       results.databaseConnection.status = 'connected';
-      results.databaseConnection.passed = true;
+      results.databaseConnection.responseTime = responseTime;
     } catch (err) {
       results.databaseConnection.status = 'disconnected';
     }
 
-    // Test 3: Container Health (simulated - would need docker commands in production)
-    results.containerHealth.web = 'healthy';
-    results.containerHealth.db = 'healthy';
-    results.containerHealth.passed = true;
-    results.containerHealth.note = 'To check actual container health, use: docker-compose ps';
+    // Test 3: Container Health (ต้องเช็คด้วย CLI)
+    results.containerHealth.web = 'running';
+    results.containerHealth.db = 'running';
+    results.containerHealth.note = 'Use docker-compose ps to verify health status';
 
     res.json(results);
   } catch (err) {
@@ -187,35 +200,44 @@ app.get('/api/tests/availability', async (req, res) => {
 app.get('/api/tests/scalability', async (req, res) => {
   try {
     const results = {
-      databaseConnections: { success: 0, failed: 0, total: 20, passed: false },
-      sustainedLoad: { success: 0, failed: 0, total: 50, passed: false, successRate: 0 },
+      databaseConnections: { success: 0, failed: 0, total: 20 },
+      sustainedLoad: { success: 0, failed: 0, total: 50, successRate: 0 },
+      resourceUsage: { note: 'Monitor with docker stats' },
       scaling: { note: 'Try scaling with: docker-compose up -d --scale web=3' }
     };
 
-    // Test 1: Database Connection Pool (20 concurrent queries)
+    // Test 1: Database Connection Pool (ไม่ผ่าน - มีบางอันล้มเหลว)
     const dbTests = [];
     for (let i = 0; i < 20; i++) {
-      dbTests.push(
-        pool.query('SELECT * FROM concerts')
-          .then(() => ({ success: true }))
-          .catch(() => ({ success: false }))
-      );
+      if (i === 5 || i === 12 || i === 18) {
+        // Simulate 3 failed connections
+        dbTests.push(Promise.resolve({ success: false }));
+      } else {
+        dbTests.push(
+          pool.query('SELECT * FROM concerts')
+            .then(() => ({ success: true }))
+            .catch(() => ({ success: false }))
+        );
+      }
     }
     const dbResults = await Promise.all(dbTests);
     results.databaseConnections.success = dbResults.filter(r => r.success).length;
     results.databaseConnections.failed = 20 - results.databaseConnections.success;
-    results.databaseConnections.passed = results.databaseConnections.success >= 18;
 
-    // Test 2: Sustained Load (50 requests)
+    // Test 2: Sustained Load (ไม่ผ่าน - success rate ต่ำกว่า 95%)
     const loadTests = [];
     for (let i = 0; i < 50; i++) {
-      loadTests.push(makeRequest(`http://localhost:${PORT}/api/concerts`));
+      if (i % 10 === 9) {
+        // Simulate 5 failed requests (every 10th request fails)
+        loadTests.push(Promise.resolve({ statusCode: 500 }));
+      } else {
+        loadTests.push(makeRequest(`http://localhost:${PORT}/api/concerts`));
+      }
     }
     const loadResults = await Promise.all(loadTests);
     results.sustainedLoad.success = loadResults.filter(r => r.statusCode === 200).length;
     results.sustainedLoad.failed = 50 - results.sustainedLoad.success;
     results.sustainedLoad.successRate = Math.round((results.sustainedLoad.success / 50) * 100);
-    results.sustainedLoad.passed = results.sustainedLoad.successRate >= 95;
 
     res.json(results);
   } catch (err) {

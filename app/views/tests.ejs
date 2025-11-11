@@ -59,20 +59,12 @@
             padding: 8px 20px;
             border-radius: 20px;
             font-weight: bold;
-        }
-
-        .status-loading {
             background: #ffc107;
             color: #000;
         }
 
-        .status-passed {
+        .test-status.completed {
             background: #4caf50;
-            color: white;
-        }
-
-        .status-failed {
-            background: #f44336;
             color: white;
         }
 
@@ -85,14 +77,7 @@
             margin-bottom: 15px;
             border-radius: 10px;
             background: #f5f5f5;
-        }
-
-        .result-item.passed {
-            border-left: 5px solid #4caf50;
-        }
-
-        .result-item.failed {
-            border-left: 5px solid #f44336;
+            border-left: 5px solid #667eea;
         }
 
         .result-title {
@@ -225,6 +210,18 @@
             font-weight: bold;
             color: #667eea;
         }
+
+        .note-box {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 5px;
+        }
+
+        .note-box strong {
+            color: #856404;
+        }
     </style>
 </head>
 <body>
@@ -238,9 +235,12 @@
             <ol>
                 <li><strong>กดปุ่มเริ่มทดสอบ</strong> ด้านล่างเพื่อรันการทดสอบแต่ละส่วน</li>
                 <li><strong>บันทึกผลลัพธ์</strong> ที่แสดงออกมาลงใน <code>test-report.md</code></li>
-                <li><strong>วิเคราะห์ผล</strong> ว่าผ่านมาตรฐานหรือไม่ พร้อมอธิบายสาเหตุ</li>
+                <li><strong>วิเคราะห์ผล</strong> เปรียบเทียบกับมาตรฐานที่กำหนด พร้อมอธิบายสาเหตุ</li>
                 <li><strong>ตอบคำถาม</strong> ใน <code>assessment.md</code> ตามความเข้าใจของตนเอง</li>
             </ol>
+            <div class="note-box">
+                <strong>หมายเหตุ:</strong> นักศึกษาต้องวิเคราะห์เองว่าผลที่ได้ผ่านมาตรฐานหรือไม่ โดยเปรียบเทียบกับค่ามาตรฐานที่ระบุไว้
+            </div>
         </div>
 
         <div class="button-group">
@@ -262,7 +262,7 @@
         <div id="performance-results" class="test-card" style="display: none;">
             <div class="test-header">
                 <div class="test-title">⚡ Performance Testing</div>
-                <div class="test-status status-loading" id="performance-status">กำลังทดสอบ...</div>
+                <div class="test-status" id="performance-status">กำลังทดสอบ...</div>
             </div>
             <div class="test-results" id="performance-content">
                 <div class="loading">
@@ -276,7 +276,7 @@
         <div id="availability-results" class="test-card" style="display: none;">
             <div class="test-header">
                 <div class="test-title">🔄 Availability Testing</div>
-                <div class="test-status status-loading" id="availability-status">กำลังทดสอบ...</div>
+                <div class="test-status" id="availability-status">กำลังทดสอบ...</div>
             </div>
             <div class="test-results" id="availability-content">
                 <div class="loading">
@@ -290,7 +290,7 @@
         <div id="scalability-results" class="test-card" style="display: none;">
             <div class="test-header">
                 <div class="test-title">📈 Scalability Testing</div>
-                <div class="test-status status-loading" id="scalability-status">กำลังทดสอบ...</div>
+                <div class="test-status" id="scalability-status">กำลังทดสอบ...</div>
             </div>
             <div class="test-results" id="scalability-content">
                 <div class="loading">
@@ -310,7 +310,6 @@
 
             btn.disabled = true;
             resultsDiv.style.display = 'block';
-            statusDiv.className = 'test-status status-loading';
             statusDiv.textContent = 'กำลังทดสอบ...';
             contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Performance...</div>';
 
@@ -319,15 +318,12 @@
                 const data = await response.json();
 
                 let html = '';
-                let allPassed = true;
 
                 // Test 1: Health Check
-                const healthPassed = data.healthCheck.passed;
-                allPassed = allPassed && healthPassed;
                 html += `
-                    <div class="result-item ${healthPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${healthPassed ? '✅' : '❌'} Test 1: Health Check API Response Time</div>
-                        <div class="standard">มาตรฐาน: ต้องไม่เกิน 500ms</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 1: Health Check API Response Time</div>
+                        <div class="standard">📏 มาตรฐาน: ต้องไม่เกิน ${data.healthCheck.standard}ms</div>
                         <div class="metric-grid">
                             ${data.healthCheck.times.map((time, i) => `
                                 <div class="metric-box">
@@ -336,18 +332,15 @@
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="result-detail"><strong>Average:</strong> ${data.healthCheck.avg}ms</div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${healthPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                        <div class="result-detail"><strong>ค่าเฉลี่ย:</strong> ${data.healthCheck.avg}ms</div>
                     </div>
                 `;
 
                 // Test 2: Concerts API
-                const concertsPassed = data.concertsApi.passed;
-                allPassed = allPassed && concertsPassed;
                 html += `
-                    <div class="result-item ${concertsPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${concertsPassed ? '✅' : '❌'} Test 2: Concerts API Response Time</div>
-                        <div class="standard">มาตรฐาน: ต้องไม่เกิน 1000ms</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 2: Concerts API Response Time</div>
+                        <div class="standard">📏 มาตรฐาน: ต้องไม่เกิน ${data.concertsApi.standard}ms</div>
                         <div class="metric-grid">
                             ${data.concertsApi.times.map((time, i) => `
                                 <div class="metric-box">
@@ -356,38 +349,34 @@
                                 </div>
                             `).join('')}
                         </div>
-                        <div class="result-detail"><strong>Average:</strong> ${data.concertsApi.avg}ms</div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${concertsPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                        <div class="result-detail"><strong>ค่าเฉลี่ย:</strong> ${data.concertsApi.avg}ms</div>
                     </div>
                 `;
 
                 // Test 3: Concurrent Requests
-                const concurrentPassed = data.concurrent.passed;
-                allPassed = allPassed && concurrentPassed;
                 html += `
-                    <div class="result-item ${concurrentPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${concurrentPassed ? '✅' : '❌'} Test 3: Concurrent Requests Handling</div>
-                        <div class="standard">มาตรฐาน: รองรับ ≥ 10 concurrent requests</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 3: Concurrent Requests Handling</div>
+                        <div class="standard">📏 มาตรฐาน: รองรับ ≥ 10 concurrent requests</div>
                         <div class="metric-grid">
                             <div class="metric-box">
-                                <div class="metric-label">Successful</div>
-                                <div class="metric-value">${data.concurrent.success}/10</div>
+                                <div class="metric-label">สำเร็จ</div>
+                                <div class="metric-value">${data.concurrent.success}/${data.concurrent.total}</div>
                             </div>
                             <div class="metric-box">
-                                <div class="metric-label">Failed</div>
-                                <div class="metric-value">${data.concurrent.failed}/10</div>
+                                <div class="metric-label">ล้มเหลว</div>
+                                <div class="metric-value">${data.concurrent.failed}/${data.concurrent.total}</div>
                             </div>
                         </div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${concurrentPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
                     </div>
                 `;
 
                 contentDiv.innerHTML = html;
-                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
-                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+                statusDiv.className = 'test-status completed';
+                statusDiv.textContent = 'เสร็จสิ้น';
             } catch (error) {
-                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
-                statusDiv.className = 'test-status status-failed';
+                contentDiv.innerHTML = `<div class="result-item"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status';
                 statusDiv.textContent = 'เกิดข้อผิดพลาด';
             } finally {
                 btn.disabled = false;
@@ -402,7 +391,6 @@
 
             btn.disabled = true;
             resultsDiv.style.display = 'block';
-            statusDiv.className = 'test-status status-loading';
             statusDiv.textContent = 'กำลังทดสอบ...';
             contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Availability...</div>';
 
@@ -411,52 +399,44 @@
                 const data = await response.json();
 
                 let html = '';
-                let allPassed = true;
 
                 // Test 1: Health Endpoint
-                const healthPassed = data.healthEndpoint.passed;
-                allPassed = allPassed && healthPassed;
                 html += `
-                    <div class="result-item ${healthPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${healthPassed ? '✅' : '❌'} Test 1: Health Endpoint Check</div>
-                        <div class="standard">มาตรฐาน: /health endpoint ต้องตอบกลับ 200 OK</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 1: Health Endpoint Check</div>
+                        <div class="standard">📏 มาตรฐาน: /health endpoint ต้องตอบกลับ 200 OK</div>
                         <div class="result-detail"><strong>Status:</strong> ${data.healthEndpoint.status}</div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${healthPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                        <div class="result-detail"><strong>Response Code:</strong> ${data.healthEndpoint.responseCode}</div>
                     </div>
                 `;
 
                 // Test 2: Database Connection
-                const dbPassed = data.databaseConnection.passed;
-                allPassed = allPassed && dbPassed;
                 html += `
-                    <div class="result-item ${dbPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${dbPassed ? '✅' : '❌'} Test 2: Database Connection</div>
-                        <div class="standard">มาตรฐาน: Database ต้องเชื่อมต่อได้</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 2: Database Connection</div>
+                        <div class="standard">📏 มาตรฐาน: Database ต้องเชื่อมต่อได้</div>
                         <div class="result-detail"><strong>Status:</strong> ${data.databaseConnection.status}</div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${dbPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                        ${data.databaseConnection.responseTime ? `<div class="result-detail"><strong>Response Time:</strong> ${data.databaseConnection.responseTime}ms</div>` : ''}
                     </div>
                 `;
 
                 // Test 3: Container Health
-                const containerPassed = data.containerHealth.passed;
-                allPassed = allPassed && containerPassed;
                 html += `
-                    <div class="result-item ${containerPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${containerPassed ? '✅' : '❌'} Test 3: Container Health Status</div>
-                        <div class="standard">มาตรฐาน: Containers ต้อง healthy</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 3: Container Health Status</div>
+                        <div class="standard">📏 มาตรฐาน: Containers ต้อง healthy</div>
                         <div class="result-detail"><strong>Web Container:</strong> ${data.containerHealth.web}</div>
                         <div class="result-detail"><strong>DB Container:</strong> ${data.containerHealth.db}</div>
-                        <div class="result-detail"><em>${data.containerHealth.note}</em></div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${containerPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                        <div class="note-box"><em>${data.containerHealth.note}</em></div>
                     </div>
                 `;
 
                 contentDiv.innerHTML = html;
-                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
-                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+                statusDiv.className = 'test-status completed';
+                statusDiv.textContent = 'เสร็จสิ้น';
             } catch (error) {
-                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
-                statusDiv.className = 'test-status status-failed';
+                contentDiv.innerHTML = `<div class="result-item"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status';
                 statusDiv.textContent = 'เกิดข้อผิดพลาด';
             } finally {
                 btn.disabled = false;
@@ -471,7 +451,6 @@
 
             btn.disabled = true;
             resultsDiv.style.display = 'block';
-            statusDiv.className = 'test-status status-loading';
             statusDiv.textContent = 'กำลังทดสอบ...';
             contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Scalability... (อาจใช้เวลาสักครู่)</div>';
 
@@ -480,39 +459,33 @@
                 const data = await response.json();
 
                 let html = '';
-                let allPassed = true;
 
                 // Test 1: Database Connections
-                const dbPassed = data.databaseConnections.passed;
-                allPassed = allPassed && dbPassed;
                 html += `
-                    <div class="result-item ${dbPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${dbPassed ? '✅' : '❌'} Test 1: Database Connection Pool</div>
-                        <div class="standard">มาตรฐาน: รองรับ ≥ 18/20 concurrent database queries</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 1: Database Connection Pool</div>
+                        <div class="standard">📏 มาตรฐาน: รองรับ ≥ 18/20 concurrent database queries</div>
                         <div class="metric-grid">
                             <div class="metric-box">
-                                <div class="metric-label">Success</div>
+                                <div class="metric-label">สำเร็จ</div>
                                 <div class="metric-value">${data.databaseConnections.success}/${data.databaseConnections.total}</div>
                             </div>
                             <div class="metric-box">
-                                <div class="metric-label">Failed</div>
+                                <div class="metric-label">ล้มเหลว</div>
                                 <div class="metric-value">${data.databaseConnections.failed}/${data.databaseConnections.total}</div>
                             </div>
                         </div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${dbPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
                     </div>
                 `;
 
                 // Test 2: Sustained Load
-                const loadPassed = data.sustainedLoad.passed;
-                allPassed = allPassed && loadPassed;
                 html += `
-                    <div class="result-item ${loadPassed ? 'passed' : 'failed'}">
-                        <div class="result-title">${loadPassed ? '✅' : '❌'} Test 2: Sustained Load Test</div>
-                        <div class="standard">มาตรฐาน: Success rate ≥ 95% (50 requests)</div>
+                    <div class="result-item">
+                        <div class="result-title">Test 2: Sustained Load Test</div>
+                        <div class="standard">📏 มาตรฐาน: Success rate ≥ 95% (50 requests)</div>
                         <div class="metric-grid">
                             <div class="metric-box">
-                                <div class="metric-label">Success</div>
+                                <div class="metric-label">สำเร็จ</div>
                                 <div class="metric-value">${data.sustainedLoad.success}/${data.sustainedLoad.total}</div>
                             </div>
                             <div class="metric-box">
@@ -520,25 +493,33 @@
                                 <div class="metric-value">${data.sustainedLoad.successRate}%</div>
                             </div>
                         </div>
-                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${loadPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
                     </div>
                 `;
+
+                // Resource Usage
+                if (data.resourceUsage) {
+                    html += `
+                        <div class="result-item">
+                            <div class="result-title">ℹ️ Resource Usage</div>
+                            <div class="note-box">${data.resourceUsage.note}</div>
+                        </div>
+                    `;
+                }
 
                 // Scaling Note
                 html += `
                     <div class="result-item">
                         <div class="result-title">ℹ️ Container Scaling</div>
-                        <div class="result-detail">${data.scaling.note}</div>
-                        <div class="result-detail">หมายเหตุ: การ scale containers ต้องใช้คำสั่ง Docker CLI ดังกล่าว</div>
+                        <div class="note-box">${data.scaling.note}</div>
                     </div>
                 `;
 
                 contentDiv.innerHTML = html;
-                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
-                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+                statusDiv.className = 'test-status completed';
+                statusDiv.textContent = 'เสร็จสิ้น';
             } catch (error) {
-                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
-                statusDiv.className = 'test-status status-failed';
+                contentDiv.innerHTML = `<div class="result-item"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status';
                 statusDiv.textContent = 'เกิดข้อผิดพลาด';
             } finally {
                 btn.disabled = false;
