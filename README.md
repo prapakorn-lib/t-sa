@@ -43,7 +43,7 @@ t-sa/
 - Docker (version 20.10 หรือสูงกว่า)
 - Docker Compose (version 2.0 หรือสูงกว่า)
 - curl (สำหรับทดสอบ API)
-- bc (สำหรับคำนวณในสคริปต์ทดสอบ)
+- bc (สำหรับคำนวณในสคริปต์ทดสอบ) - Linux/Mac/WSL only
 - jq (optional - สำหรับแสดงผล JSON สวยงาม)
 
 ### ตรวจสอบการติดตั้ง
@@ -54,6 +54,14 @@ docker-compose --version
 curl --version
 bc --version
 ```
+
+### สำหรับผู้ใช้ Windows
+
+**👉 อ่านคู่มือพิเศษสำหรับ Windows: [WINDOWS-GUIDE.md](WINDOWS-GUIDE.md)**
+
+มีสคริปต์ทดสอบ 2 แบบให้เลือก:
+- **PowerShell scripts** (`.ps1`) - แนะนำสำหรับ Windows
+- **Shell scripts** (`.sh`) - สำหรับ Git Bash / WSL / Linux / Mac
 
 ---
 
@@ -163,6 +171,7 @@ curl http://localhost:3000/api/bookings
 
 #### 3.1 Performance Testing
 
+**Linux/Mac/WSL:**
 ```bash
 # ให้สิทธิ์ execute
 chmod +x test-scripts/performance-test.sh
@@ -171,30 +180,60 @@ chmod +x test-scripts/performance-test.sh
 bash test-scripts/performance-test.sh
 ```
 
+**Windows (PowerShell):**
+```powershell
+.\test-scripts\performance-test.ps1
+```
+
+**Windows (Git Bash):**
+```bash
+bash test-scripts/performance-test.sh
+```
+
 บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.1
 
 #### 3.2 Availability Testing
 
+**Linux/Mac/WSL:**
 ```bash
-chmod +x test-scripts/availability-test.sh
 bash test-scripts/availability-test.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\test-scripts\availability-test.ps1
 ```
 
 บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.2
 
 #### 3.3 Scalability Testing
 
+**Linux/Mac/WSL:**
 ```bash
-chmod +x test-scripts/scalability-test.sh
 bash test-scripts/scalability-test.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\test-scripts\scalability-test.ps1
 ```
 
 บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.3
 
 #### 3.4 รันทดสอบทั้งหมดพร้อมกัน
 
+**Linux/Mac/WSL:**
 ```bash
-chmod +x test-scripts/run-all-tests.sh
+bash test-scripts/run-all-tests.sh
+```
+
+**Windows (PowerShell):**
+```powershell
+.\test-scripts\run-all-tests.ps1
+```
+
+**Windows (Git Bash):**
+```bash
 bash test-scripts/run-all-tests.sh
 ```
 
