@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Quality Tests - Concert Ticket System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+            font-size: 2.5em;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .test-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .test-title {
+            font-size: 1.8em;
+            color: #667eea;
+            font-weight: bold;
+        }
+
+        .test-status {
+            font-size: 1.2em;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+
+        .status-loading {
+            background: #ffc107;
+            color: #000;
+        }
+
+        .status-passed {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-failed {
+            background: #f44336;
+            color: white;
+        }
+
+        .test-results {
+            margin-top: 20px;
+        }
+
+        .result-item {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 10px;
+            background: #f5f5f5;
+        }
+
+        .result-item.passed {
+            border-left: 5px solid #4caf50;
+        }
+
+        .result-item.failed {
+            border-left: 5px solid #f44336;
+        }
+
+        .result-title {
+            font-size: 1.2em;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .result-detail {
+            color: #666;
+            line-height: 1.6;
+            margin: 5px 0;
+        }
+
+        .standard {
+            background: #e3f2fd;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            font-style: italic;
+        }
+
+        .btn-test {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn-test:hover {
+            transform: scale(1.05);
+        }
+
+        .btn-test:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            margin-bottom: 30px;
+            text-align: center;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 30px;
+            font-size: 1.2em;
+            color: #666;
+        }
+
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .back-link {
+            display: inline-block;
+            color: white;
+            text-decoration: none;
+            padding: 10px 20px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            transition: background 0.3s ease;
+        }
+
+        .back-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .instructions {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .instructions h2 {
+            color: #667eea;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            padding-left: 25px;
+            line-height: 2;
+        }
+
+        .metric-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .metric-box {
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            border: 2px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .metric-label {
+            font-size: 0.9em;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .metric-value {
+            font-size: 1.8em;
+            font-weight: bold;
+            color: #667eea;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <a href="/" class="back-link">← กลับไปหน้าหลัก</a>
+
+        <h1>🧪 Software Quality Testing</h1>
+
+        <div class="instructions">
+            <h2>📋 คำแนะนำ</h2>
+            <ol>
+                <li><strong>กดปุ่มเริ่มทดสอบ</strong> ด้านล่างเพื่อรันการทดสอบแต่ละส่วน</li>
+                <li><strong>บันทึกผลลัพธ์</strong> ที่แสดงออกมาลงใน <code>test-report.md</code></li>
+                <li><strong>วิเคราะห์ผล</strong> ว่าผ่านมาตรฐานหรือไม่ พร้อมอธิบายสาเหตุ</li>
+                <li><strong>ตอบคำถาม</strong> ใน <code>assessment.md</code> ตามความเข้าใจของตนเอง</li>
+            </ol>
+        </div>
+
+        <div class="button-group">
+            <button class="btn-test" onclick="runPerformanceTest()" id="btn-performance">
+                ⚡ เริ่มทดสอบ Performance
+            </button>
+            <button class="btn-test" onclick="runAvailabilityTest()" id="btn-availability">
+                🔄 เริ่มทดสอบ Availability
+            </button>
+            <button class="btn-test" onclick="runScalabilityTest()" id="btn-scalability">
+                📈 เริ่มทดสอบ Scalability
+            </button>
+            <button class="btn-test" onclick="runAllTests()" id="btn-all">
+                🚀 รันทดสอบทั้งหมด
+            </button>
+        </div>
+
+        <!-- Performance Test Results -->
+        <div id="performance-results" class="test-card" style="display: none;">
+            <div class="test-header">
+                <div class="test-title">⚡ Performance Testing</div>
+                <div class="test-status status-loading" id="performance-status">กำลังทดสอบ...</div>
+            </div>
+            <div class="test-results" id="performance-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    กำลังรันการทดสอบ Performance...
+                </div>
+            </div>
+        </div>
+
+        <!-- Availability Test Results -->
+        <div id="availability-results" class="test-card" style="display: none;">
+            <div class="test-header">
+                <div class="test-title">🔄 Availability Testing</div>
+                <div class="test-status status-loading" id="availability-status">กำลังทดสอบ...</div>
+            </div>
+            <div class="test-results" id="availability-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    กำลังรันการทดสอบ Availability...
+                </div>
+            </div>
+        </div>
+
+        <!-- Scalability Test Results -->
+        <div id="scalability-results" class="test-card" style="display: none;">
+            <div class="test-header">
+                <div class="test-title">📈 Scalability Testing</div>
+                <div class="test-status status-loading" id="scalability-status">กำลังทดสอบ...</div>
+            </div>
+            <div class="test-results" id="scalability-content">
+                <div class="loading">
+                    <div class="spinner"></div>
+                    กำลังรันการทดสอบ Scalability...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function runPerformanceTest() {
+            const btn = document.getElementById('btn-performance');
+            const resultsDiv = document.getElementById('performance-results');
+            const contentDiv = document.getElementById('performance-content');
+            const statusDiv = document.getElementById('performance-status');
+
+            btn.disabled = true;
+            resultsDiv.style.display = 'block';
+            statusDiv.className = 'test-status status-loading';
+            statusDiv.textContent = 'กำลังทดสอบ...';
+            contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Performance...</div>';
+
+            try {
+                const response = await fetch('/api/tests/performance');
+                const data = await response.json();
+
+                let html = '';
+                let allPassed = true;
+
+                // Test 1: Health Check
+                const healthPassed = data.healthCheck.passed;
+                allPassed = allPassed && healthPassed;
+                html += `
+                    <div class="result-item ${healthPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${healthPassed ? '✅' : '❌'} Test 1: Health Check API Response Time</div>
+                        <div class="standard">มาตรฐาน: ต้องไม่เกิน 500ms</div>
+                        <div class="metric-grid">
+                            ${data.healthCheck.times.map((time, i) => `
+                                <div class="metric-box">
+                                    <div class="metric-label">Request ${i+1}</div>
+                                    <div class="metric-value">${time}ms</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="result-detail"><strong>Average:</strong> ${data.healthCheck.avg}ms</div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${healthPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Test 2: Concerts API
+                const concertsPassed = data.concertsApi.passed;
+                allPassed = allPassed && concertsPassed;
+                html += `
+                    <div class="result-item ${concertsPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${concertsPassed ? '✅' : '❌'} Test 2: Concerts API Response Time</div>
+                        <div class="standard">มาตรฐาน: ต้องไม่เกิน 1000ms</div>
+                        <div class="metric-grid">
+                            ${data.concertsApi.times.map((time, i) => `
+                                <div class="metric-box">
+                                    <div class="metric-label">Request ${i+1}</div>
+                                    <div class="metric-value">${time}ms</div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div class="result-detail"><strong>Average:</strong> ${data.concertsApi.avg}ms</div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${concertsPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Test 3: Concurrent Requests
+                const concurrentPassed = data.concurrent.passed;
+                allPassed = allPassed && concurrentPassed;
+                html += `
+                    <div class="result-item ${concurrentPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${concurrentPassed ? '✅' : '❌'} Test 3: Concurrent Requests Handling</div>
+                        <div class="standard">มาตรฐาน: รองรับ ≥ 10 concurrent requests</div>
+                        <div class="metric-grid">
+                            <div class="metric-box">
+                                <div class="metric-label">Successful</div>
+                                <div class="metric-value">${data.concurrent.success}/10</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Failed</div>
+                                <div class="metric-value">${data.concurrent.failed}/10</div>
+                            </div>
+                        </div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${concurrentPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                contentDiv.innerHTML = html;
+                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
+                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status status-failed';
+                statusDiv.textContent = 'เกิดข้อผิดพลาด';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function runAvailabilityTest() {
+            const btn = document.getElementById('btn-availability');
+            const resultsDiv = document.getElementById('availability-results');
+            const contentDiv = document.getElementById('availability-content');
+            const statusDiv = document.getElementById('availability-status');
+
+            btn.disabled = true;
+            resultsDiv.style.display = 'block';
+            statusDiv.className = 'test-status status-loading';
+            statusDiv.textContent = 'กำลังทดสอบ...';
+            contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Availability...</div>';
+
+            try {
+                const response = await fetch('/api/tests/availability');
+                const data = await response.json();
+
+                let html = '';
+                let allPassed = true;
+
+                // Test 1: Health Endpoint
+                const healthPassed = data.healthEndpoint.passed;
+                allPassed = allPassed && healthPassed;
+                html += `
+                    <div class="result-item ${healthPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${healthPassed ? '✅' : '❌'} Test 1: Health Endpoint Check</div>
+                        <div class="standard">มาตรฐาน: /health endpoint ต้องตอบกลับ 200 OK</div>
+                        <div class="result-detail"><strong>Status:</strong> ${data.healthEndpoint.status}</div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${healthPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Test 2: Database Connection
+                const dbPassed = data.databaseConnection.passed;
+                allPassed = allPassed && dbPassed;
+                html += `
+                    <div class="result-item ${dbPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${dbPassed ? '✅' : '❌'} Test 2: Database Connection</div>
+                        <div class="standard">มาตรฐาน: Database ต้องเชื่อมต่อได้</div>
+                        <div class="result-detail"><strong>Status:</strong> ${data.databaseConnection.status}</div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${dbPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Test 3: Container Health
+                const containerPassed = data.containerHealth.passed;
+                allPassed = allPassed && containerPassed;
+                html += `
+                    <div class="result-item ${containerPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${containerPassed ? '✅' : '❌'} Test 3: Container Health Status</div>
+                        <div class="standard">มาตรฐาน: Containers ต้อง healthy</div>
+                        <div class="result-detail"><strong>Web Container:</strong> ${data.containerHealth.web}</div>
+                        <div class="result-detail"><strong>DB Container:</strong> ${data.containerHealth.db}</div>
+                        <div class="result-detail"><em>${data.containerHealth.note}</em></div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${containerPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                contentDiv.innerHTML = html;
+                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
+                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status status-failed';
+                statusDiv.textContent = 'เกิดข้อผิดพลาด';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function runScalabilityTest() {
+            const btn = document.getElementById('btn-scalability');
+            const resultsDiv = document.getElementById('scalability-results');
+            const contentDiv = document.getElementById('scalability-content');
+            const statusDiv = document.getElementById('scalability-status');
+
+            btn.disabled = true;
+            resultsDiv.style.display = 'block';
+            statusDiv.className = 'test-status status-loading';
+            statusDiv.textContent = 'กำลังทดสอบ...';
+            contentDiv.innerHTML = '<div class="loading"><div class="spinner"></div>กำลังรันการทดสอบ Scalability... (อาจใช้เวลาสักครู่)</div>';
+
+            try {
+                const response = await fetch('/api/tests/scalability');
+                const data = await response.json();
+
+                let html = '';
+                let allPassed = true;
+
+                // Test 1: Database Connections
+                const dbPassed = data.databaseConnections.passed;
+                allPassed = allPassed && dbPassed;
+                html += `
+                    <div class="result-item ${dbPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${dbPassed ? '✅' : '❌'} Test 1: Database Connection Pool</div>
+                        <div class="standard">มาตรฐาน: รองรับ ≥ 18/20 concurrent database queries</div>
+                        <div class="metric-grid">
+                            <div class="metric-box">
+                                <div class="metric-label">Success</div>
+                                <div class="metric-value">${data.databaseConnections.success}/${data.databaseConnections.total}</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Failed</div>
+                                <div class="metric-value">${data.databaseConnections.failed}/${data.databaseConnections.total}</div>
+                            </div>
+                        </div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${dbPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Test 2: Sustained Load
+                const loadPassed = data.sustainedLoad.passed;
+                allPassed = allPassed && loadPassed;
+                html += `
+                    <div class="result-item ${loadPassed ? 'passed' : 'failed'}">
+                        <div class="result-title">${loadPassed ? '✅' : '❌'} Test 2: Sustained Load Test</div>
+                        <div class="standard">มาตรฐาน: Success rate ≥ 95% (50 requests)</div>
+                        <div class="metric-grid">
+                            <div class="metric-box">
+                                <div class="metric-label">Success</div>
+                                <div class="metric-value">${data.sustainedLoad.success}/${data.sustainedLoad.total}</div>
+                            </div>
+                            <div class="metric-box">
+                                <div class="metric-label">Success Rate</div>
+                                <div class="metric-value">${data.sustainedLoad.successRate}%</div>
+                            </div>
+                        </div>
+                        <div class="result-detail"><strong>ผลการประเมิน:</strong> ${loadPassed ? 'ผ่าน ✓' : 'ไม่ผ่าน ✗'}</div>
+                    </div>
+                `;
+
+                // Scaling Note
+                html += `
+                    <div class="result-item">
+                        <div class="result-title">ℹ️ Container Scaling</div>
+                        <div class="result-detail">${data.scaling.note}</div>
+                        <div class="result-detail">หมายเหตุ: การ scale containers ต้องใช้คำสั่ง Docker CLI ดังกล่าว</div>
+                    </div>
+                `;
+
+                contentDiv.innerHTML = html;
+                statusDiv.className = `test-status ${allPassed ? 'status-passed' : 'status-failed'}`;
+                statusDiv.textContent = allPassed ? 'ผ่านทั้งหมด ✓' : 'ไม่ผ่านบางส่วน ✗';
+            } catch (error) {
+                contentDiv.innerHTML = `<div class="result-item failed"><div class="result-title">❌ เกิดข้อผิดพลาด</div><div class="result-detail">${error.message}</div></div>`;
+                statusDiv.className = 'test-status status-failed';
+                statusDiv.textContent = 'เกิดข้อผิดพลาด';
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        async function runAllTests() {
+            await runPerformanceTest();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await runAvailabilityTest();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await runScalabilityTest();
+        }
+    </script>
+</body>
+</html>

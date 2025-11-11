@@ -52,9 +52,9 @@ docker-compose --version
 
 ---
 
-## 🚀 วิธีรัน Test Scripts (ง่ายที่สุด - ใช้ได้ทุก Platform)
+## 🚀 วิธีใช้งาน (ง่ายมาก!)
 
-**👉 วิธีนี้ใช้ได้กับ Windows, Mac, Linux เหมือนกันหมด!**
+**แค่เปิด Browser ไม่ต้องรันคำสั่งอะไรเลย!**
 
 ### Quick Start
 
@@ -62,23 +62,23 @@ docker-compose --version
 # 1. เริ่มระบบ
 docker-compose up -d
 
-# 2. รันการทดสอบ
-# Linux/Mac/WSL:
-./test-scripts/docker-test-runner.sh all
+# 2. เปิด Browser ไปที่
+http://localhost:3000/tests
 
-# Windows (PowerShell):
-.\test-scripts\docker-test-runner.ps1 all
+# 3. กดปุ่ม "รันทดสอบทั้งหมด"
+# 4. บันทึกผลลงใน test-report.md
 ```
 
-**📖 อ่านคู่มือฉบับย่อ: [SIMPLE-TEST-GUIDE.md](SIMPLE-TEST-GUIDE.md)**
+**📖 อ่านคู่มือแบบย่อ: [QUICK-START.md](QUICK-START.md)**
 
 ---
 
-## วิธีการอื่นๆ (Advanced)
+## วิธีการอื่นๆ (สำหรับ Advanced Users)
 
-หากต้องการใช้วิธีอื่นนอกเหนือจาก Docker:
+หากต้องการรัน tests ผ่าน command line:
+- **Docker method:** [SIMPLE-TEST-GUIDE.md](SIMPLE-TEST-GUIDE.md) - รันผ่าน Docker commands
 - **Windows users:** [WINDOWS-GUIDE.md](WINDOWS-GUIDE.md) - PowerShell, Git Bash, WSL
-- **Advanced Docker users:** [DOCKER-TEST-GUIDE.md](DOCKER-TEST-GUIDE.md) - Docker Compose method
+- **Advanced Docker:** [DOCKER-TEST-GUIDE.md](DOCKER-TEST-GUIDE.md) - Docker Compose method
 
 ---
 
@@ -186,34 +186,19 @@ curl http://localhost:3000/api/bookings
 
 ### ขั้นตอนที่ 3: ทดสอบระบบตาม Software Quality Attributes
 
-**วิธีที่แนะนำ (ใช้ได้ทุก Platform):**
+**วิธีที่แนะนำ - ผ่าน Web Browser:**
 
-```bash
-# Linux/Mac/WSL
-chmod +x test-scripts/docker-test-runner.sh  # ครั้งแรกเท่านั้น
-./test-scripts/docker-test-runner.sh all
+1. เปิด Browser ไปที่ `http://localhost:3000/tests`
+2. กดปุ่ม **"🚀 รันทดสอบทั้งหมด"** (หรือทดสอบทีละส่วน)
+3. ดูผลการทดสอบที่แสดงบนหน้าเว็บ
+4. บันทึกผลลงใน `test-report.md`
 
-# Windows (PowerShell)
-.\test-scripts\docker-test-runner.ps1 all
-```
+**สามารถดูผลการทดสอบแบบ JSON ได้ที่:**
+- Performance: `http://localhost:3000/api/tests/performance`
+- Availability: `http://localhost:3000/api/tests/availability`
+- Scalability: `http://localhost:3000/api/tests/scalability`
 
-**หรือรันทีละส่วน:**
-
-```bash
-# Linux/Mac/WSL
-./test-scripts/docker-test-runner.sh performance
-./test-scripts/docker-test-runner.sh availability
-./test-scripts/docker-test-runner.sh scalability
-
-# Windows (PowerShell)
-.\test-scripts\docker-test-runner.ps1 performance
-.\test-scripts\docker-test-runner.ps1 availability
-.\test-scripts\docker-test-runner.ps1 scalability
-```
-
-บันทึกผลการทดสอบใน `test-report.md`
-
-**📖 ดูรายละเอียดเพิ่มเติม:** [SIMPLE-TEST-GUIDE.md](SIMPLE-TEST-GUIDE.md)
+**📖 ดูรายละเอียดเพิ่มเติม:** [QUICK-START.md](QUICK-START.md)
 
 ### ขั้นตอนที่ 4: วิเคราะห์และแก้ไขปัญหา
 
