@@ -38,30 +38,47 @@ t-sa/
 
 ## ความต้องการของระบบ (Prerequisites)
 
-ก่อนเริ่มทำข้อสอบ ต้องติดตั้งโปรแกรมต่อไปนี้:
+ต้องติดตั้งเพียง **Docker และ Docker Compose** เท่านั้น!
 
-- Docker (version 20.10 หรือสูงกว่า)
-- Docker Compose (version 2.0 หรือสูงกว่า)
-- curl (สำหรับทดสอบ API)
-- bc (สำหรับคำนวณในสคริปต์ทดสอบ) - Linux/Mac/WSL only
-- jq (optional - สำหรับแสดงผล JSON สวยงาม)
+- **Docker Desktop** (version 20.10 หรือสูงกว่า) - [ดาวน์โหลด](https://www.docker.com/products/docker-desktop)
+- **Docker Compose** (version 2.0 หรือสูงกว่า) - มากับ Docker Desktop
 
 ### ตรวจสอบการติดตั้ง
 
 ```bash
 docker --version
 docker-compose --version
-curl --version
-bc --version
 ```
 
-### สำหรับผู้ใช้ Windows
+---
 
-**👉 อ่านคู่มือพิเศษสำหรับ Windows: [WINDOWS-GUIDE.md](WINDOWS-GUIDE.md)**
+## 🚀 วิธีรัน Test Scripts (ง่ายที่สุด - ใช้ได้ทุก Platform)
 
-มีสคริปต์ทดสอบ 2 แบบให้เลือก:
-- **PowerShell scripts** (`.ps1`) - แนะนำสำหรับ Windows
-- **Shell scripts** (`.sh`) - สำหรับ Git Bash / WSL / Linux / Mac
+**👉 วิธีนี้ใช้ได้กับ Windows, Mac, Linux เหมือนกันหมด!**
+
+### Quick Start
+
+```bash
+# 1. เริ่มระบบ
+docker-compose up -d
+
+# 2. รันการทดสอบ
+# Linux/Mac/WSL:
+./test-scripts/docker-test-runner.sh all
+
+# Windows (PowerShell):
+.\test-scripts\docker-test-runner.ps1 all
+```
+
+**📖 อ่านคู่มือฉบับย่อ: [SIMPLE-TEST-GUIDE.md](SIMPLE-TEST-GUIDE.md)**
+
+---
+
+## วิธีการอื่นๆ (Advanced)
+
+หากต้องการใช้วิธีอื่นนอกเหนือจาก Docker:
+- **Windows users:** [WINDOWS-GUIDE.md](WINDOWS-GUIDE.md) - PowerShell, Git Bash, WSL
+- **Advanced Docker users:** [DOCKER-TEST-GUIDE.md](DOCKER-TEST-GUIDE.md) - Docker Compose method
 
 ---
 
@@ -169,73 +186,34 @@ curl http://localhost:3000/api/bookings
 
 ### ขั้นตอนที่ 3: ทดสอบระบบตาม Software Quality Attributes
 
-#### 3.1 Performance Testing
+**วิธีที่แนะนำ (ใช้ได้ทุก Platform):**
 
-**Linux/Mac/WSL:**
 ```bash
-# ให้สิทธิ์ execute
-chmod +x test-scripts/performance-test.sh
+# Linux/Mac/WSL
+chmod +x test-scripts/docker-test-runner.sh  # ครั้งแรกเท่านั้น
+./test-scripts/docker-test-runner.sh all
 
-# รันการทดสอบ
-bash test-scripts/performance-test.sh
+# Windows (PowerShell)
+.\test-scripts\docker-test-runner.ps1 all
 ```
 
-**Windows (PowerShell):**
-```powershell
-.\test-scripts\performance-test.ps1
-```
+**หรือรันทีละส่วน:**
 
-**Windows (Git Bash):**
 ```bash
-bash test-scripts/performance-test.sh
+# Linux/Mac/WSL
+./test-scripts/docker-test-runner.sh performance
+./test-scripts/docker-test-runner.sh availability
+./test-scripts/docker-test-runner.sh scalability
+
+# Windows (PowerShell)
+.\test-scripts\docker-test-runner.ps1 performance
+.\test-scripts\docker-test-runner.ps1 availability
+.\test-scripts\docker-test-runner.ps1 scalability
 ```
 
-บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.1
+บันทึกผลการทดสอบใน `test-report.md`
 
-#### 3.2 Availability Testing
-
-**Linux/Mac/WSL:**
-```bash
-bash test-scripts/availability-test.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\test-scripts\availability-test.ps1
-```
-
-บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.2
-
-#### 3.3 Scalability Testing
-
-**Linux/Mac/WSL:**
-```bash
-bash test-scripts/scalability-test.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\test-scripts\scalability-test.ps1
-```
-
-บันทึกผลการทดสอบใน `test-report.md` ส่วนที่ 2.3
-
-#### 3.4 รันทดสอบทั้งหมดพร้อมกัน
-
-**Linux/Mac/WSL:**
-```bash
-bash test-scripts/run-all-tests.sh
-```
-
-**Windows (PowerShell):**
-```powershell
-.\test-scripts\run-all-tests.ps1
-```
-
-**Windows (Git Bash):**
-```bash
-bash test-scripts/run-all-tests.sh
-```
+**📖 ดูรายละเอียดเพิ่มเติม:** [SIMPLE-TEST-GUIDE.md](SIMPLE-TEST-GUIDE.md)
 
 ### ขั้นตอนที่ 4: วิเคราะห์และแก้ไขปัญหา
 
