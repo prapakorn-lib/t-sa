@@ -1,6 +1,5 @@
 # ข้อสอบปฏิบัติ Docker: ระบบจำหน่ายตั๋วคอนเสิร์ต
-## Concert Ticket Sales System - 2-Tier Architecture
-
+## Concert Ticket Sales System 
 ---
 
 ## ภาพรวมโครงการ
