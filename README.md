@@ -63,7 +63,7 @@ docker-compose --version
 docker-compose up -d
 
 # 2. เปิด Browser ไปที่
-http://localhost:3000/tests
+http://localhost:8347/tests
 
 # 3. กดปุ่ม "รันทดสอบทั้งหมด"
 # 4. บันทึกผลลงใน test-report.md
@@ -108,10 +108,10 @@ docker-compose logs -f
 
 ```bash
 # Check health endpoint
-curl http://localhost:3000/health
+curl http://localhost:8347/health
 
 # Access the web application
-# เปิด browser ไปที่: http://localhost:3000
+# เปิด browser ไปที่: http://localhost:8347
 ```
 
 ### 4. หยุดระบบ
@@ -133,25 +133,25 @@ docker-compose down -v
 ### Health Check
 ```bash
 GET /health
-curl http://localhost:3000/health
+curl http://localhost:8347/health
 ```
 
 ### Get All Concerts
 ```bash
 GET /api/concerts
-curl http://localhost:3000/api/concerts
+curl http://localhost:8347/api/concerts
 ```
 
 ### Get Specific Concert
 ```bash
 GET /api/concerts/:id
-curl http://localhost:3000/api/concerts/1
+curl http://localhost:8347/api/concerts/1
 ```
 
 ### Create Booking
 ```bash
 POST /api/bookings
-curl -X POST http://localhost:3000/api/bookings \
+curl -X POST http://localhost:8347/api/bookings \
   -H "Content-Type: application/json" \
   -d '{
     "concert_id": 1,
@@ -164,7 +164,7 @@ curl -X POST http://localhost:3000/api/bookings \
 ### Get All Bookings
 ```bash
 GET /api/bookings
-curl http://localhost:3000/api/bookings
+curl http://localhost:8347/api/bookings
 ```
 
 ---
@@ -188,15 +188,15 @@ curl http://localhost:3000/api/bookings
 
 **วิธีที่แนะนำ - ผ่าน Web Browser:**
 
-1. เปิด Browser ไปที่ `http://localhost:3000/tests`
+1. เปิด Browser ไปที่ `http://localhost:8347/tests`
 2. กดปุ่ม **"🚀 รันทดสอบทั้งหมด"** (หรือทดสอบทีละส่วน)
 3. ดูผลการทดสอบที่แสดงบนหน้าเว็บ
 4. บันทึกผลลงใน `test-report.md`
 
 **สามารถดูผลการทดสอบแบบ JSON ได้ที่:**
-- Performance: `http://localhost:3000/api/tests/performance`
-- Availability: `http://localhost:3000/api/tests/availability`
-- Scalability: `http://localhost:3000/api/tests/scalability`
+- Performance: `http://localhost:8347/api/tests/performance`
+- Availability: `http://localhost:8347/api/tests/availability`
+- Scalability: `http://localhost:8347/api/tests/scalability`
 
 **📖 ดูรายละเอียดเพิ่มเติม:** [QUICK-START.md](QUICK-START.md)
 
@@ -328,7 +328,7 @@ docker volume rm t-sa_postgres-data
 
 **วิธีแก้:**
 ```bash
-# หา process ที่ใช้ port 3000
+# หา process ที่ใช้ port 8347
 sudo lsof -i :3000
 
 # หยุด process หรือเปลี่ยน port ใน docker-compose.yml
@@ -338,7 +338,7 @@ sudo lsof -i :3000
 
 **อาการ:** Error เมื่อ scale web service
 
-**สาเหตุ:** Port mapping แบบ fixed (3000:3000) ไม่สามารถใช้กับหลาย containers
+**สาเหตุ:** Port mapping แบบ fixed (8347:8347) ไม่สามารถใช้กับหลาย containers
 
 **วิธีแก้:**
 - ลบ fixed port mapping หรือ

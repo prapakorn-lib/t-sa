@@ -5,15 +5,18 @@ const { exec } = require('child_process');
 const http = require('http');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 8347;
 
 // Database connection configuration
 const pool = new Pool({
   host: process.env.DB_HOST || 'db',
-  port: process.env.DB_PORT || 5432,
+  port: process.env.DB_PORT || 54321,
   database: process.env.DB_NAME || 'concert_db',
   user: process.env.DB_USER || 'postgres',
   password: process.env.DB_PASSWORD || 'postgres123',
+  max: 20,
+  idleTimeoutMillis: 30000,
+  connectionTimeoutMillis: 2000,
 });
 
 // Middleware
@@ -240,6 +243,40 @@ app.get('/api/tests/scalability', async (req, res) => {
     results.sustainedLoad.successRate = Math.round((results.sustainedLoad.success / 50) * 100);
 
     res.json(results);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// System Info endpoint (for inspection - students must run to get values)
+app.get('/api/system/info', async (req, res) => {
+  try {
+    const dbResult = await pool.query('SELECT version() as db_version, current_database() as db_name, inet_server_port() as db_port');
+    res.json({
+      application: {
+        buildId: process.env.BUILD_ID || 'unknown',
+        version: process.env.APP_VERSION || 'unknown',
+        deployEnv: process.env.DEPLOY_ENV || 'unknown',
+        port: PORT,
+        nodeVersion: process.version,
+        uptime: Math.floor(process.uptime()),
+      },
+      database: {
+        host: process.env.DB_HOST,
+        port: process.env.DB_PORT,
+        name: dbResult.rows[0].db_name,
+        instanceId: process.env.DB_INSTANCE_ID || 'unknown',
+        cluster: process.env.DB_CLUSTER || 'unknown',
+        serverPort: dbResult.rows[0].db_port,
+        poolMax: pool.options.max,
+        poolIdleTimeout: pool.options.idleTimeoutMillis,
+      },
+      network: {
+        hostname: require('os').hostname(),
+        platform: process.platform,
+        arch: process.arch,
+      }
+    });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

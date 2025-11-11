@@ -6,14 +6,18 @@ services:
     build: ./app
     container_name: concert-web
     ports:
-      - "3000:3000"
+      - "8347:8347"
     environment:
-      - PORT=3000
+      - PORT=8347
       - DB_HOST=db
-      - DB_PORT=5432
+      - DB_PORT=54321
       - DB_NAME=concert_db
       - DB_USER=postgres
       - DB_PASSWORD=postgres123
+      - BUILD_ID=BLD-2024-X9K7M3
+      - DEPLOY_ENV=exam-production
+      - APP_VERSION=2.4.7
+      - SESSION_SECRET=sk_prod_9x8c7v6b5n4m3k2j1h0
     depends_on:
       db:
         condition: service_healthy
@@ -21,7 +25,7 @@ services:
     networks:
       - concert-network
     healthcheck:
-      test: ["CMD", "node", "-e", "require('http').get('http://localhost:3000/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8347/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"]
       interval: 30s
       timeout: 3s
       retries: 3
@@ -35,19 +39,23 @@ services:
       - POSTGRES_DB=concert_db
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres123
+      - PGPORT=54321
+      - DB_INSTANCE_ID=PGDB-X7M9K4N2
+      - DB_CLUSTER=exam-cluster-01
     volumes:
       - postgres-data:/var/lib/postgresql/data
     ports:
-      - "5432:5432"
+      - "54321:54321"
     restart: unless-stopped
     networks:
       - concert-network
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U postgres -p 54321"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 30s
+    command: -p 54321
 
   # Test Runner Service (สำหรับรันการทดสอบ - Optional)
   test-runner:

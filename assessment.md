@@ -1,149 +1,269 @@
 # แบบประเมินข้อสอบปฏิบัติ Docker
 ## ระบบจำหน่ายตั๋วคอนเสิร์ต (Concert Ticket Sales System)
 
----
-
-## ส่วนที่ 1: ความเข้าใจเกี่ยวกับสถาปัตยกรรมระบบ (Architecture Understanding)
-
-### คำถาม 1.1: ชนิดของสถาปัตยกรรม
-1. ระบบนี้ใช้สถาปัตยกรรมแบบใด?
-   - [ ] 1-tier Architecture
-   - [ ] 2-tier Architecture
-   - [ ] 3-tier Architecture
-   - [ ] Microservices Architecture
-
-2. อธิบายความแตกต่างระหว่าง 2-tier และ 3-tier Architecture พร้อมยกตัวอย่าง
-   ```
-   คำตอบ:
-
-
-
-   ```
-
-3. ระบุ tier ต่างๆ ในระบบนี้ และบอกบทบาทของแต่ละ tier
-   - Tier 1: _______________________________
-     - บทบาท: _______________________________
-
-   - Tier 2: _______________________________
-     - บทบาท: _______________________________
-
-4. หากต้องการเปลี่ยนเป็น 3-tier Architecture จะต้องแยก tier ไหนออกมา และเพราะเหตุใด?
-   ```
-   คำตอบ:
-
-
-
-   ```
+**คำเตือน: คำถามทั้งหมดต้องใช้การ run ระบบจริง ไม่สามารถตอบจาก code หรือ config เพียงอย่างเดียว**
 
 ---
 
-### คำถาม 1.2: เทคโนโลยีที่ใช้ในระบบ
+## ส่วนที่ 1: การตรวจสอบระบบและ Configuration (System Inspection)
 
-5. ระบุเทคโนโลยีหลักที่ใช้ในระบบนี้
-   - **Frontend Framework/Runtime**: _______________________________
-   - **Web Framework**: _______________________________
-   - **Database**: _______________________________
-   - **Container Technology**: _______________________________
-   - **Orchestration Tool**: _______________________________
+**คำสั่งเริ่มต้น:**
+```bash
+docker-compose up -d --build
+docker-compose ps
+```
 
-6. อธิบายหน้าที่ของ `docker-compose.yml` ในโครงการนี้
+### คำถาม 1.1: Port Configuration (ต้อง inspect จริง)
+
+1. ระบบนี้ใช้ Port อะไรบ้างสำหรับ Web Service? (ต้องตรวจสอบจาก container ที่ running)
+   ```bash
+   # ใช้คำสั่ง: docker ps หรือ docker-compose ps
    ```
-   คำตอบ:
+   - **Host Port:** _______
+   - **Container Port:** _______
 
-
-
+2. Database ใช้ Port อะไร? (ต้องตรวจสอบจาก running container)
+   ```bash
+   # ใช้คำสั่ง: docker inspect concert-db | grep -A 5 "Ports"
+   # หรือ: docker port concert-db
    ```
+   - **Database Port:** _______
 
-7. ใน `docker-compose.yml` มีการกำหนด `depends_on` ไว้ จุดประสงค์ของการกำหนดนี้คืออะไร?
+3. ทดสอบว่าสามารถเข้าถึง Web Service ได้จริงหรือไม่? (ต้องทดสอบด้วย curl หรือ browser)
+   ```bash
+   # ใช้คำสั่ง: curl http://localhost:[PORT]/health
    ```
-   คำตอบ:
-
-
-
-   ```
+   - **Port ที่ใช้ทดสอบ:** _______
+   - **Response Status:** _______
+   - **Database Status:** _______
 
 ---
 
-## ส่วนที่ 2: การทำงานตาม Architecture
+### คำถาม 1.2: Environment Variables (ต้อง inspect container)
 
-### คำถาม 2.1: Data Flow
-
-8. อธิบาย Data Flow เมื่อผู้ใช้ทำการจองตั๋วคอนเสิร์ต (ตั้งแต่กดปุ่มจองจนข้อมูลถูกบันทึกในฐานข้อมูล)
+4. Web Container มี Environment Variable อะไรบ้าง? ระบุค่าที่สำคัญ (ต้องใช้ docker inspect)
+   ```bash
+   # ใช้คำสั่ง: docker inspect concert-web -f '{{.Config.Env}}'
+   # หรือ: docker exec concert-web env
    ```
-   Step 1:
+   - **BUILD_ID:** _______________________________
+   - **APP_VERSION:** _______________________________
+   - **DEPLOY_ENV:** _______________________________
+   - **DB_PORT:** _______________________________
 
-   Step 2:
-
-   Step 3:
-
-   Step 4:
-
-   Step 5:
-
+5. Database Container ตั้งค่า PGPORT เป็นเท่าไร? (ต้อง inspect)
+   ```bash
+   # ใช้คำสั่ง: docker inspect concert-db -f '{{.Config.Env}}'
    ```
+   - **PGPORT:** _______
 
-9. ระบบนี้ใช้ Port อะไรบ้างในการสื่อสาร และแต่ละ Port ใช้สำหรับอะไร?
-   - Port _____: ใช้สำหรับ _______________________________
-   - Port _____: ใช้สำหรับ _______________________________
-
-10. อธิบายวิธีการที่ Container `web` สื่อสารกับ Container `db`
-    ```
-    คำตอบ:
-
-
-
-    ```
+6. Database Instance ID และ Cluster Name คืออะไร? (ไม่สามารถดูจาก docker-compose.yml ได้ ต้อง run)
+   ```bash
+   # ใช้คำสั่ง: docker exec concert-db env | grep DB_
+   ```
+   - **DB_INSTANCE_ID:** _______________________________
+   - **DB_CLUSTER:** _______________________________
 
 ---
 
-### คำถาม 2.2: Docker Networks และ Volumes
+### คำถาม 1.3: System Info API (ต้องเรียก API จริง)
 
-11. ใน `docker-compose.yml` มีการกำหนด Network ชื่อว่า `concert-network` จุดประสงค์คืออะไร?
-    ```
-    คำตอบ:
+7. เรียก API `/api/system/info` และบันทึกข้อมูลที่ได้
+   ```bash
+   # ใช้คำสั่ง: curl http://localhost:[PORT]/api/system/info | jq
+   ```
 
+   **Application Info:**
+   - Build ID: _______________________________
+   - Version: _______________________________
+   - Port: _______
+   - Node Version: _______________________________
+   - Uptime (seconds): _______
 
+   **Database Info:**
+   - Host: _______________________________
+   - Port: _______
+   - Server Port: _______
+   - Instance ID: _______________________________
+   - Cluster: _______________________________
+   - Pool Max Connections: _______
+   - Pool Idle Timeout (ms): _______
 
-    ```
-
-12. Volume `postgres-data` ใช้สำหรับอะไร และทำไมต้องใช้ Volume?
-    ```
-    คำตอบ:
-
-
-
-    ```
+   **Network Info:**
+   - Hostname: _______________________________
+   - Platform: _______________________________
+   - Architecture: _______________________________
 
 ---
 
-## ส่วนที่ 3: Software Quality Attributes (SQA)
+## ส่วนที่ 2: Docker Networking และ Architecture
 
-### 3.1 Performance (ประสิทธิภาพ)
+### คำถาม 2.1: Network Inspection
 
-#### มาตรฐานที่กำหนด
-- Response Time ของ API `/health` ต้องไม่เกิน 500ms
-- Response Time ของ API `/api/concerts` ต้องไม่เกิน 1000ms
-- ระบบสามารถรองรับการเข้าถึงพร้อมกันได้อย่างน้อย 10 concurrent requests
+8. Containers ใช้ Network อะไร? (ต้อง inspect)
+   ```bash
+   # ใช้คำสั่ง: docker network ls
+   # และ: docker network inspect t-sa_concert-network
+   ```
+   - **Network Name:** _______________________________
+   - **Network Driver:** _______________________________
+   - **Subnet:** _______________________________
+   - **Gateway:** _______________________________
 
-#### คำถาม 3.1
+9. IP Address ของแต่ละ Container คืออะไร? (ต้อง inspect)
+   ```bash
+   # ใช้คำสั่ง: docker inspect concert-web -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}'
+   ```
+   - **Web Container IP:** _______________________________
+   - **DB Container IP:** _______________________________
 
-13. จากผลการทดสอบ Performance ที่คุณได้ทำ (ใช้คำสั่งใน `test-scripts/performance-test.sh`)
+10. ทดสอบการเชื่อมต่อระหว่าง Containers (ต้อง exec เข้าไปใน container)
+    ```bash
+    # เข้าไปใน web container: docker exec -it concert-web sh
+    # ping db container: ping -c 3 db
+    # หรือทดสอบ: nc -zv db [DB_PORT]
+    ```
+    - **สามารถ ping ถึง db ได้หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **Round-trip time (avg):** _______ ms
 
-    **ผลการทดสอบ API `/health`:**
+---
+
+### คำถาม 2.2: Volume และ Data Persistence
+
+11. Volume อะไรบ้างที่ถูกสร้างขึ้น? (ต้องตรวจสอบจริง)
+    ```bash
+    # ใช้คำสั่ง: docker volume ls
+    # และ: docker volume inspect t-sa_postgres-data
+    ```
+    - **Volume Name:** _______________________________
+    - **Mountpoint:** _______________________________
+    - **Driver:** _______________________________
+
+12. ทดสอบ Data Persistence (ต้องทำจริง)
+    ```bash
+    # 1. สร้างข้อมูลทดสอบ (จองตั๋ว 1 ใบ)
+    # 2. docker-compose down
+    # 3. docker volume ls (ตรวจสอบว่า volume ยังอยู่)
+    # 4. docker-compose up -d
+    # 5. ตรวจสอบข้อมูลยังอยู่หรือไม่
+    ```
+    - **Volume ยังอยู่หลัง down หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **ข้อมูล bookings ยังอยู่หรือไม่:** [ ] ใช่  [ ] ไม่
+
+---
+
+## ส่วนที่ 3: Performance Testing (ต้อง run tests จริง)
+
+**⚠️ สำคัญ: เข้า http://localhost:[PORT]/tests และกดปุ่ม "ทดสอบ Performance" หรือใช้ curl**
+
+### คำถาม 3.1: ผลการทดสอบ Performance
+
+13. ทดสอบ Performance และบันทึกผล
+    ```bash
+    # เข้า: http://localhost:[PORT]/tests
+    # กดปุ่ม: ทดสอบ Performance
+    # หรือ: curl http://localhost:[PORT]/api/tests/performance | jq
+    ```
+
+    **Health Check Test:**
     - Average Response Time: _______ ms
-    - ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
+    - Standard (มาตรฐาน): _______ ms
+    - ผ่านหรือไม่? (เปรียบเทียบเอง): [ ] ผ่าน  [ ] ไม่ผ่าน
 
-    **ผลการทดสอบ API `/api/concerts`:**
+    **Concerts API Test:**
     - Average Response Time: _______ ms
-    - ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
+    - Standard (มาตรฐาน): _______ ms
+    - ผ่านหรือไม่? (เปรียบเทียบเอง): [ ] ผ่าน  [ ] ไม่ผ่าน
 
-    **ผลการทดสอบ Concurrent Requests:**
-    - จำนวน requests ที่สำเร็จ: _______/10
-    - ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
+    **Concurrent Requests Test:**
+    - Success: _______/10
+    - Failed: _______/10
+    - ผ่านหรือไม่? (ต้องสำเร็จ 10/10): [ ] ผ่าน  [ ] ไม่ผ่าน
 
-14. หากผลการทดสอบไม่ผ่านมาตรฐาน ควรแก้ไขอย่างไร?
+14. วิเคราะห์สาเหตุที่ไม่ผ่าน (ถ้ามี)
     ```
-    คำแนะนำในการแก้ไข:
+    สาเหตุ:
+
+
+
+    วิธีแก้ไข:
+
+
+    ```
+
+---
+
+## ส่วนที่ 4: Availability Testing (ต้อง run tests จริง)
+
+### คำถาม 4.1: ทดสอบ Health Checks
+
+15. ตรวจสอบ Health Check Configuration
+    ```bash
+    # ใช้คำสั่ง: docker inspect concert-web -f '{{.State.Health.Status}}'
+    # และ: docker inspect concert-db -f '{{.State.Health.Status}}'
+    ```
+    - **Web Health Status:** _______________________________
+    - **DB Health Status:** _______________________________
+    - **Web Health Test Command:** _______________________________
+    - **DB Health Test Command:** _______________________________
+
+16. ทดสอบ Auto-Restart (ต้องทดสอบจริง)
+    ```bash
+    # 1. docker stop concert-web
+    # 2. รอ 10-20 วินาที
+    # 3. docker ps -a | grep concert-web
+    # 4. ตรวจสอบว่า container กลับมา running หรือไม่
+    ```
+    - **Status หลัง stop:** _______________________________
+    - **Container restart อัตโนมัติหรือไม่:** [ ] ใช่  [ ] ไม่
+    - **Restart Count:** _______
+
+17. ทดสอบ Availability API
+    ```bash
+    # curl http://localhost:[PORT]/api/tests/availability | jq
+    ```
+    - **Health Endpoint Response Code:** _______
+    - **Database Connection Status:** _______________________________
+    - **Database Response Time:** _______ ms
+
+---
+
+## ส่วนที่ 5: Scalability Testing (ต้อง run tests จริง)
+
+### คำถาม 5.1: Database Connection Pool
+
+18. ทดสอบ Scalability และบันทึกผล
+    ```bash
+    # curl http://localhost:[PORT]/api/tests/scalability | jq
+    ```
+
+    **Database Connection Pool Test:**
+    - Success: _______/20
+    - Failed: _______/20
+    - Success Rate: _______% (ต้อง ≥90%)
+    - ผ่านหรือไม่: [ ] ผ่าน  [ ] ไม่ผ่าน
+
+    **Sustained Load Test:**
+    - Success: _______/50
+    - Failed: _______/50
+    - Success Rate: _______% (ต้อง ≥95%)
+    - ผ่านหรือไม่: [ ] ผ่าน  [ ] ไม่ผ่าน
+
+19. ทดสอบการ Scale Web Service (ต้องทำจริง)
+    ```bash
+    # docker-compose up -d --scale web=3
+    ```
+    - **สามารถ scale ได้หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **จำนวน containers ที่รันอยู่:** _______
+    - **Error Message (ถ้ามี):**
+    ```
+
+
+    ```
+
+20. ถ้าไม่สามารถ scale ได้ สาเหตุคืออะไร? (ต้องวิเคราะห์จาก error)
+    ```
+    สาเหตุ:
 
 
 
@@ -151,188 +271,123 @@
 
 ---
 
-### 3.2 Availability (ความพร้อมใช้งาน)
+## ส่วนที่ 6: Container Resource Monitoring
 
-#### มาตรฐานที่กำหนด
-- Container ทุกตัวต้องมี Health Check
-- Container ต้อง restart อัตโนมัติเมื่อเกิดปัญหา
-- Database ต้อง healthy ก่อนที่ Web Service จะเริ่มทำงาน
+### คำถาม 6.1: Resource Usage (ต้อง monitor จริง)
 
-#### คำถาม 3.2
-
-15. ตรวจสอบว่า Container มี Health Check หรือไม่ (ใช้คำสั่ง `docker-compose ps`)
-
-    **Container `web`:**
-    - มี Health Check: [ ] ใช่  [ ] ไม่
-    - Status: _______________________________
-
-    **Container `db`:**
-    - มี Health Check: [ ] ใช่  [ ] ไม่
-    - Status: _______________________________
-
-    **ผลการประเมิน:** [ ] ผ่าน  [ ] ไม่ผ่าน
-
-16. ทดสอบการ restart อัตโนมัติโดยใช้คำสั่ง `docker stop concert-web` แล้วสังเกตผล
-    ```
-    ผลที่เกิดขึ้น:
-
-
-    Container restart หรือไม่: [ ] ใช่  [ ] ไม่
-
-    ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
+21. ตรวจสอบการใช้ทรัพยากรของ Containers
+    ```bash
+    # docker stats --no-stream
+    # หรือ: docker stats --no-stream concert-web concert-db
     ```
 
-17. หาก Container ไม่มี Health Check ควรเพิ่มอย่างไร?
+    **Web Container:**
+    - CPU Usage: _______%
+    - Memory Usage: _______ MiB / _______ MiB
+    - Memory Percentage: _______%
+    - Network I/O (RX/TX): _______ / _______
+
+    **DB Container:**
+    - CPU Usage: _______%
+    - Memory Usage: _______ MiB / _______ MiB
+    - Memory Percentage: _______%
+    - Network I/O (RX/TX): _______ / _______
+
+22. ตรวจสอบ Container Logs (5 บรรทัดล่าสุด)
+    ```bash
+    # docker logs --tail 5 concert-web
+    # docker logs --tail 5 concert-db
     ```
-    คำแนะนำในการแก้ไข:
-
-
-
-    ```
+    - **Web Container มี Error หรือ Warning หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **DB Container มี Error หรือ Warning หรือไม่:** [ ] ใช่  [ ] ไม่
 
 ---
 
-### 3.3 Scalability (ความสามารถในการขยายระบบ)
+## ส่วนที่ 7: Advanced Docker Commands
 
-#### มาตรฐานที่กำหนด
-- สามารถ scale Web Service ได้โดยไม่ต้องแก้ไข code
-- สามารถเพิ่มจำนวน replicas ของ Web Service ได้
-- Database connection ต้องรองรับการ scale
+### คำถาม 7.1: Inspection และ Debugging
 
-#### คำถาม 3.3
-
-18. ทดสอบการ scale Web Service โดยใช้คำสั่ง `docker-compose up -d --scale web=3`
+23. ดูข้อมูลทั้งหมดของ Web Container
+    ```bash
+    # docker inspect concert-web | jq '.[]' | head -30
     ```
-    ผลที่เกิดขึ้น:
+    - **Container ID (12 ตัวแรก):** _______________________________
+    - **Image:** _______________________________
+    - **Created:** _______________________________
+    - **Restart Count:** _______
+    - **Restart Policy:** _______________________________
 
-
-    จำนวน Container ที่รันอยู่: _______
-
-    ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
+24. ตรวจสอบ Process ที่รันอยู่ใน Container
+    ```bash
+    # docker exec concert-web ps aux
     ```
+    - **PID ของ node process:** _______
+    - **จำนวน process ทั้งหมด:** _______
 
-19. ปัญหาที่เกิดขึ้นเมื่อ scale Web Service (ถ้ามี)
+25. ตรวจสอบ File System ใน Container
+    ```bash
+    # docker exec concert-web ls -la /app
     ```
-    ปัญหา:
-
-
-
-    ```
-
-20. หากไม่สามารถ scale ได้ ควรแก้ไขอย่างไร?
-    ```
-    คำแนะนำในการแก้ไข:
-    1.
-
-    2.
-
-    3.
-    ```
-
----
-
-## ส่วนที่ 4: การทดสอบเพิ่มเติม
-
-### คำถาม 4.1: Database Persistence
-
-21. ทดสอบการเก็บข้อมูลถาวร (Data Persistence)
-    - หยุด containers: `docker-compose down`
-    - เริ่ม containers ใหม่: `docker-compose up -d`
-    - ตรวจสอบว่าข้อมูลยังอยู่หรือไม่
-
-    ```
-    ผลการทดสอบ:
-
-    ข้อมูลยังอยู่: [ ] ใช่  [ ] ไม่
-
-    ผลการประเมิน: [ ] ผ่าน  [ ] ไม่ผ่าน
-    ```
-
-22. ถ้าใช้คำสั่ง `docker-compose down -v` แล้วเริ่มใหม่ ข้อมูลจะเป็นอย่างไร? เพราะเหตุใด?
-    ```
-    คำตอบ:
-
-
-
-    ```
-
----
-
-## ส่วนที่ 5: Docker Commands และการใช้งาน
-
-### คำถาม 5.1: คำสั่ง Docker ที่สำคัญ
-
-23. อธิบายความแตกต่างระหว่างคำสั่งต่อไปนี้:
-    - `docker-compose up` vs `docker-compose up -d`
-    ```
-    คำตอบ:
-
-    ```
-
-    - `docker-compose down` vs `docker-compose down -v`
-    ```
-    คำตอบ:
-
-    ```
-
-24. หากต้องการดู logs ของ Web Service ต้องใช้คำสั่งอะไร?
-    ```
-    คำสั่ง:
-
-    ```
-
-25. หากต้องการเข้าไปทำงานใน Container `web` ต้องใช้คำสั่งอะไร?
-    ```
-    คำสั่ง:
-
-    ```
+    - **มีไฟล์ package.json หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **มีโฟลเดอร์ node_modules หรือไม่:** [ ] ใช่  [ ] ไม่
+    - **มีโฟลเดอร์ views หรือไม่:** [ ] ใช่  [ ] ไม่
 
 ---
 
 ## สรุปผลการประเมิน
 
-### Performance Testing
-- [ ] ผ่าน
-- [ ] ไม่ผ่าน
-- **หมายเหตุ:** _______________________________
+### ผลการทดสอบแต่ละหมวด
 
-### Availability Testing
-- [ ] ผ่าน
+**Performance Testing**
+- [ ] ผ่านทุกการทดสอบ (3/3)
+- [ ] ผ่านบางส่วน (_____/3)
 - [ ] ไม่ผ่าน
-- **หมายเหตุ:** _______________________________
 
-### Scalability Testing
-- [ ] ผ่าน
+**Availability Testing**
+- [ ] ผ่านทุกการทดสอบ
+- [ ] ผ่านบางส่วน
 - [ ] ไม่ผ่าน
-- **หมายเหตุ:** _______________________________
 
-### ผลการประเมินโดยรวม
-- [ ] ผ่านทั้งหมด
-- [ ] ผ่านบางส่วน (______/3 หัวข้อ)
+**Scalability Testing**
+- [ ] ผ่านทุกการทดสอบ
+- [ ] ผ่านบางส่วน
 - [ ] ไม่ผ่าน
+
+### คะแนนรวม
+
+- ส่วนที่ 1: System Inspection (25 คะแนน) = _______
+- ส่วนที่ 2: Networking (15 คะแนน) = _______
+- ส่วนที่ 3: Performance (15 คะแนน) = _______
+- ส่วนที่ 4: Availability (15 คะแนน) = _______
+- ส่วนที่ 5: Scalability (15 คะแนน) = _______
+- ส่วนที่ 6: Resource Monitoring (10 คะแนน) = _______
+- ส่วนที่ 7: Advanced Commands (5 คะแนน) = _______
+
+**คะแนนรวมทั้งหมด: _______/100**
 
 ---
 
-## ข้อเสนอแนะและการปรับปรุง
+## ข้อเสนอแนะในการปรับปรุงระบบ
 
-26. จากการทดสอบและประเมินระบบ มีข้อเสนอแนะในการปรับปรุงระบบอย่างไร?
+26. จากผลการทดสอบ มีข้อเสนอแนะในการปรับปรุงอย่างไร?
     ```
-    ข้อเสนอแนะ:
     1.
+
 
     2.
 
+
     3.
+
 
     ```
 
 ---
 
-**หมายเหตุ:** นักศึกษาต้องทำการทดสอบจริงด้วยคำสั่งที่ให้ไว้ในโฟลเดอร์ `test-scripts/` และบันทึกผลลงในแบบประเมินนี้
+**หมายเหตุ:**
+- ❗ คำถามทุกข้อต้องใช้การ run ระบบจริง
+- ❗ ไม่สามารถตอบได้จากการอ่าน code หรือ config เพียงอย่างเดียว
+- ❗ ต้องใช้ docker commands เพื่อ inspect, monitor, และทดสอบ
+- ❗ Port numbers และ configuration values ต้องได้มาจาก running containers
 
 **คะแนนเต็ม:** 100 คะแนน
-- ส่วนที่ 1: 25 คะแนน
-- ส่วนที่ 2: 20 คะแนน
-- ส่วนที่ 3: 35 คะแนน (Performance: 10, Availability: 15, Scalability: 10)
-- ส่วนที่ 4: 10 คะแนน
-- ส่วนที่ 5: 10 คะแนน

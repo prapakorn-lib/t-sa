@@ -14,12 +14,12 @@ docker-compose up -d
 
 **1. ทดสอบว่าระบบพร้อม:**
 ```
-http://localhost:3000
+http://localhost:8347
 ```
 
 **2. เข้าหน้าทดสอบ Software Quality:**
 ```
-http://localhost:3000/tests
+http://localhost:8347/tests
 ```
 
 ### ขั้นตอนที่ 3: รันการทดสอบ
@@ -58,28 +58,28 @@ http://localhost:3000/tests
 ### Test APIs
 ```bash
 # Performance Test
-curl http://localhost:3000/api/tests/performance
+curl http://localhost:8347/api/tests/performance
 
 # Availability Test
-curl http://localhost:3000/api/tests/availability
+curl http://localhost:8347/api/tests/availability
 
 # Scalability Test
-curl http://localhost:3000/api/tests/scalability
+curl http://localhost:8347/api/tests/scalability
 ```
 
 ### Application APIs
 ```bash
 # Health Check
-curl http://localhost:3000/health
+curl http://localhost:8347/health
 
 # Get all concerts
-curl http://localhost:3000/api/concerts
+curl http://localhost:8347/api/concerts
 
 # Get specific concert
-curl http://localhost:3000/api/concerts/1
+curl http://localhost:8347/api/concerts/1
 
 # Create booking
-curl -X POST http://localhost:3000/api/bookings \
+curl -X POST http://localhost:8347/api/bookings \
   -H "Content-Type: application/json" \
   -d '{
     "concert_id": 1,
@@ -89,7 +89,7 @@ curl -X POST http://localhost:3000/api/bookings \
   }'
 
 # Get all bookings
-curl http://localhost:3000/api/bookings
+curl http://localhost:8347/api/bookings
 ```
 
 ---
@@ -123,7 +123,7 @@ docker-compose build
 
 ## Troubleshooting
 
-### ปัญหา: เข้า http://localhost:3000 ไม่ได้
+### ปัญหา: เข้า http://localhost:8347 ไม่ได้
 
 **แก้ไข:**
 1. ตรวจสอบว่า containers รันอยู่: `docker-compose ps`
@@ -141,7 +141,7 @@ docker-compose build
 
 **แก้ไข:**
 ```bash
-# หา process ที่ใช้ port 3000
+# หา process ที่ใช้ port 8347
 # Windows:
 netstat -ano | findstr :3000
 
@@ -156,7 +156,7 @@ lsof -i :3000
 ## สรุปสั้นๆ สำหรับนักศึกษา
 
 1. `docker-compose up -d` → เริ่มระบบ
-2. เปิด Browser → `http://localhost:3000/tests`
+2. เปิด Browser → `http://localhost:8347/tests`
 3. กดปุ่ม "รันทดสอบทั้งหมด"
 4. บันทึกผลใน `test-report.md`
 5. ตอบคำถามใน `assessment.md`
