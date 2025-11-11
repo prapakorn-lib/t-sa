@@ -5,14 +5,11 @@
 
 ## ภาพรวมโครงการ
 
-โปรเจคนี้เป็นข้อสอบปฏิบัติสำหรับทดสอบความสามารถในการใช้ Docker โดยสร้างระบบจำหน่ายตั๋วคอนเสิร์ตแบบ 2-tier Architecture ประกอบด้วย:
-
-- **Tier 1:** Web Application (Node.js + Express + EJS)
-- **Tier 2:** Database (PostgreSQL)
+โปรเจคนี้เป็นข้อสอบปฏิบัติสำหรับทดสอบความสามารถในการใช้ Docker โดยสร้างระบบจำหน่ายตั๋วคอนเสิร์ต
 
 ### วัตถุประสงค์
 1. ทดสอบความเข้าใจเกี่ยวกับ Docker และ Docker Compose
-2. ทดสอบความเข้าใจเกี่ยวกับ 2-tier และ 3-tier Architecture
+2. ทดสอบความเข้าใจเกี่ยวกับ Architecture
 3. ประเมินระบบตาม Software Quality Attributes (Performance, Availability, Scalability)
 
 ---
@@ -66,7 +63,7 @@ bc --version
 ### 1. Clone หรือ Download โปรเจค
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/prapakorn-lib/t-sa.git
 cd t-sa
 ```
 
